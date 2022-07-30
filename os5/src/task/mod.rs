@@ -23,6 +23,7 @@ use lazy_static::*;
 use manager::fetch_task;
 use switch::__switch;
 pub use task::{TaskControlBlock, TaskStatus};
+pub use manager::{mmap, munmap, get_task_info, update_task_info};
 
 pub use context::TaskContext;
 pub use manager::add_task;

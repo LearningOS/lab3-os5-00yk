@@ -2,7 +2,7 @@
 
 use super::TaskContext;
 use super::{pid_alloc, KernelStack, PidHandle};
-use crate::config::TRAP_CONTEXT;
+use crate::config::{MAX_SYSCALL_NUM, TRAP_CONTEXT};
 use crate::mm::{MemorySet, PhysPageNum, VirtAddr, KERNEL_SPACE};
 use crate::sync::UPSafeCell;
 use crate::trap::{trap_handler, TrapContext};
@@ -49,8 +49,23 @@ pub struct TaskControlBlockInner {
     // Added by LAB3
     pub task_priority: usize,
     pub task_stride: usize,
+    // Synced from LAB1
+    pub task_statistics: TaskStatistics
 }
 
+
+// Synced from LAB1
+#[derive(Copy, Clone)]
+pub struct TaskStatistics {
+    pub start_time: usize,
+    pub syscall_times: [u32; MAX_SYSCALL_NUM],
+}
+
+impl Default for TaskStatistics {
+    fn default() -> Self {
+        Self { start_time: Default::default(), syscall_times: [0; MAX_SYSCALL_NUM] }
+    }
+}
 /// Simple access to its internal fields
 impl TaskControlBlockInner {
     /*
@@ -108,6 +123,7 @@ impl TaskControlBlock {
                     exit_code: 0,
                     task_priority: 16, // default value
                     task_stride: 0,
+                    task_statistics: TaskStatistics::default(),
                 })
             },
         };
@@ -179,6 +195,7 @@ impl TaskControlBlock {
                     exit_code: 0,
                     task_priority: parent_inner.task_priority,
                     task_stride: parent_inner.task_stride,
+                    task_statistics: TaskStatistics::default(),
                 })
             },
         });

@@ -196,3 +196,11 @@ pub fn translated_refmut<T>(token: usize, ptr: *mut T) -> &'static mut T {
         .unwrap()
         .get_mut()
 }
+
+// Synced from LAB2
+pub fn translated_physical_address(token: usize, ptr: *const u8) -> usize {
+    let page_table = PageTable::from_token(token);
+    let va = VirtAddr::from(ptr as usize);
+    let ppn = page_table.find_pte(va.floor()).unwrap().ppn();
+    super::PhysAddr::from(ppn).0 + va.page_offset()
+}

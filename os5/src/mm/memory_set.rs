@@ -248,6 +248,15 @@ impl MemorySet {
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
         self.page_table.translate(vpn)
     }
+    // corresponding mmap can be insert_framed_data
+    // Added by LAB2
+    pub fn munmap(&mut self, vpn: VirtPageNum) {
+        for area in &mut self.areas {
+            if vpn < area.vpn_range.get_end() && vpn >= area.vpn_range.get_start() {
+                area.unmap_one(&mut self.page_table, vpn);
+            }
+        }
+    }
     pub fn recycle_data_pages(&mut self) {
         //*self = Self::new_bare();
         self.areas.clear();
