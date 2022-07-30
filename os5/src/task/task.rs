@@ -46,6 +46,9 @@ pub struct TaskControlBlockInner {
     pub children: Vec<Arc<TaskControlBlock>>,
     /// It is set when active exit or execution error occurs
     pub exit_code: i32,
+    // Added by LAB3
+    pub task_priority: usize,
+    pub task_stride: usize,
 }
 
 /// Simple access to its internal fields
@@ -103,6 +106,8 @@ impl TaskControlBlock {
                     parent: None,
                     children: Vec::new(),
                     exit_code: 0,
+                    task_priority: 16, // default value
+                    task_stride: 0,
                 })
             },
         };
@@ -132,6 +137,8 @@ impl TaskControlBlock {
         inner.memory_set = memory_set;
         // update trap_cx ppn
         inner.trap_cx_ppn = trap_cx_ppn;
+        // set priority, necessary?
+        inner.task_priority = 16;
         // initialize trap_cx
         let trap_cx = inner.get_trap_cx();
         *trap_cx = TrapContext::app_init_context(
@@ -170,6 +177,8 @@ impl TaskControlBlock {
                     parent: Some(Arc::downgrade(self)),
                     children: Vec::new(),
                     exit_code: 0,
+                    task_priority: parent_inner.task_priority,
+                    task_stride: parent_inner.task_stride,
                 })
             },
         });
@@ -186,6 +195,10 @@ impl TaskControlBlock {
     }
     pub fn getpid(&self) -> usize {
         self.pid.0
+    }
+    pub fn set_priority(&self, prio: usize) {
+        let mut inner = self.inner_exclusive_access();
+        inner.task_priority = prio;
     }
 }
 
